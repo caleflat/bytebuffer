@@ -1,4 +1,4 @@
-module github.com/caleflat/byte-buffer
+module github.com/caleflat/bytebuffer
 
 go 1.19
 

@@ -1,7 +1,7 @@
 package bytebuffer_test
 
 import (
-	bytebuffer "github.com/caleflat/byte-buffer"
+	"github.com/caleflat/bytebuffer"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
