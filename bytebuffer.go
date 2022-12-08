@@ -1,6 +1,9 @@
 package bytebuffer
 
-import "math"
+import (
+	"encoding/binary"
+	"math"
+)
 
 // ByteBuffer is a minimal port of the Java ByteBuffer class.
 // https://docs.oracle.com/javase/7/docs/api/java/nio/ByteBuffer.html
@@ -17,6 +20,7 @@ func Allocate(capacity int) *ByteBuffer {
 
 	return &ByteBuffer{
 		buf: make([]byte, capacity),
+		pos: 0,
 	}
 }
 
@@ -76,6 +80,38 @@ func (b *ByteBuffer) PutInt64(v int64) *ByteBuffer {
 	return b
 }
 
+// PutUint writes the given uint to the buffer.
+func (b *ByteBuffer) PutUint(v uint) *ByteBuffer {
+	if b.Remaining() < 4 {
+		panic("buffer overflow")
+	}
+
+	b.buf[b.pos] = byte(v >> 24)
+	b.buf[b.pos+1] = byte(v >> 16)
+	b.buf[b.pos+2] = byte(v >> 8)
+	b.buf[b.pos+3] = byte(v)
+	b.pos += 4
+	return b
+}
+
+// PutUint64 writes the given uint64 to the buffer.
+func (b *ByteBuffer) PutUint64(v uint64) *ByteBuffer {
+	if b.Remaining() < 8 {
+		panic("buffer overflow")
+	}
+
+	b.buf[b.pos] = byte(v >> 56)
+	b.buf[b.pos+1] = byte(v >> 48)
+	b.buf[b.pos+2] = byte(v >> 40)
+	b.buf[b.pos+3] = byte(v >> 32)
+	b.buf[b.pos+4] = byte(v >> 24)
+	b.buf[b.pos+5] = byte(v >> 16)
+	b.buf[b.pos+6] = byte(v >> 8)
+	b.buf[b.pos+7] = byte(v)
+	b.pos += 8
+	return b
+}
+
 // PutString writes the given string to the buffer.
 func (b *ByteBuffer) PutString(v string) *ByteBuffer {
 	if len(v) > b.Remaining() {
@@ -98,22 +134,9 @@ func (b *ByteBuffer) PutSlice(v []byte) *ByteBuffer {
 	return b
 }
 
-// PutFloat writes the given float to the buffer.
-func (b *ByteBuffer) PutFloat(v float32) *ByteBuffer {
-	if b.Remaining() < 4 {
-		panic("buffer overflow")
-	}
+// PutFloat64 writes the given float to the buffer.
+func (b *ByteBuffer) PutFloat64(v float64) *ByteBuffer {
+	binary.BigEndian.PutUint64(b.buf[b.pos:], math.Float64bits(v))
 
-	b.PutInt(int(math.Float32bits(v)))
-	return b
-}
-
-// PutDouble writes the given double to the buffer.
-func (b *ByteBuffer) PutDouble(v float64) *ByteBuffer {
-	if b.Remaining() < 8 {
-		panic("buffer overflow")
-	}
-
-	b.PutInt64(int64(math.Float64bits(v)))
 	return b
 }
